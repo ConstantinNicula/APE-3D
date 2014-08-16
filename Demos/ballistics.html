@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+	<head>
+		<title> Kinematic Movement</title>
+		<script type="text/javascript" src = "../Build/ape.js"></script>
+		<script type="text/javascript" src = "three.js"></script>
+		<script type="text/javascript" src = "OrbitControls.js"></script>
+		<script type="text/javascript" src = "ballistics.js"></script>
+	</head>
+	<body>
+		<div id = "OSD" style="position: absolute">
+			
+		</div>
+		<script>
+			// Create scene
+			var scene  = new THREE.Scene();
+			// Create camera
+			var camera = new THREE.PerspectiveCamera(75,
+				window.innerWidth/window.innerHeight,
+				0.1,1000);
+			camera.position.set(-19,13,0);
+			camera.lookAt(new THREE.Vector3(15,0,30));
+			//camera.lookAt(scene.position);
+			//var controls = new THREE.OrbitControls(camera);
+			
+			// Create Renderer
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setClearColor(0xe0e0ff);
+			
+			document.body.appendChild(renderer.domElement);
+			
+			// create a basic scene light 
+			var light = new THREE.DirectionalLight(0xffffff, 0.5);
+				light.position.set(0, 1, 0);
+			scene.add(light);
+			
+			// Create the line marker mesh which will be duplicated to create a
+			// grid.
+			var lineGeom = new THREE.Geometry();
+			lineGeom.vertices.push(new THREE.Vector3(-5,0,0));
+			lineGeom.vertices.push(new THREE.Vector3(5,0,0));
+			
+			var lineMat = new THREE.LineBasicMaterial({color: 0x757575});
+			
+			var line;
+			
+			for(var i = 0; i <= 200; i+=10){
+				line = new THREE.Line(lineGeom, lineMat);
+				line.position.set(0,0,i);
+				scene.add(line);
+			}
+			
+			// create ballistics demo
+			var demo = new BallisticDemo();
+			// Register event handlers
+			document.addEventListener('mousedown', function(){
+				demo.fire();
+			});
+			document.addEventListener('keydown', function(event){
+				console.log(String.fromCharCode(event.which));
+				demo.key(String.fromCharCode(event.which));
+			});
+			
+			render();
+			function render(){
+				demo.update();
+				demo.display();
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
+			}
+			
+		</script>
+	</body>
+</html>

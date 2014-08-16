@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+	<head>
+		<title> Platform Demo</title>
+		<script type="text/javascript" src = "../Build/ape.js"></script>
+		<script type="text/javascript" src = "platform.js"></script>
+		<script type="text/javascript" src = "three.js"> </script>
+		<script type="text/javascript" src = "OrbitControls.js"> </script>
+	</head>
+	<body>
+		<div style = "position:absolute; left:10px ;top:10px; z-index: 10;">
+			This is a demo of the APE, mass aggregate impulse based physics engine.<br>
+			APE is authored by Nicula C.<br>
+			Instructions:<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;Use 'W,A,S,D' keys to move the mass over the bridge-like structure.<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;Left click and drag to rotate.Right click and drag to pan.<br>
+			If the nothing is happening, try clicking the window to focus it.
+		</div>
+		<script>
+			// Create scene
+			var scene  = new THREE.Scene();
+			// Create camera
+			var camera = new THREE.PerspectiveCamera(75,
+				window.innerWidth/window.innerHeight,
+				0.1,1000);
+			camera.position.set(10,10,10);
+			camera.lookAt(new THREE.Vector3(0,0,0));
+			//camera.lookAt(scene.position);
+			var controls = new THREE.OrbitControls(camera);
+			
+			// Create Renderer
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setClearColor(0xe0e0ff);
+			
+			document.body.appendChild(renderer.domElement);
+			
+			// create a basic scene light 
+			var light = new THREE.DirectionalLight(0xffffff, 0.5);
+				light.position.set(0, 1, 0);
+			scene.add(light);
+			
+			var sphereGeom = new THREE.SphereGeometry(0.1,5,5),
+				sphereMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+			
+			var meshes = [];
+			for(var i = 0; i<6; i++){
+				meshes.push(new THREE.Mesh(sphereGeom, sphereMat));
+				scene.add(meshes[i]);
+			}
+			
+			var demo = new PlatformDemo();
+			
+			//for(var i = 0; i<6; i++){
+			//	demo.world.particles.push(demo.particleArray[i]);
+			//	}
+			
+			demo.world.startFrame();
+
+			var rods = [];
+			for(var i = 0 ; i <15; i++){
+				var geom = new THREE.Geometry();
+				geom.vertices.push(new THREE.Vector3(0,0,0));
+				geom.vertices.push(new THREE.Vector3(1,1,1));
+				rods.push(new THREE.Line(geom, new THREE.LineBasicMaterial({color: 0x0000ff})));
+				scene.add(rods[i]);
+			}
+			
+
+			
+			var ball = new THREE.Mesh(new THREE.SphereGeometry(0.25, 7,7),
+			new THREE.MeshBasicMaterial({color:0xff0000}));
+			scene.add(ball);
+			
+			window.addEventListener('keydown', function(event){
+				demo.key(String.fromCharCode(event.which));
+			});
+			
+			
+			render();
+			function render(){
+				demo.updateAdditionalMass();
+				demo.world.runPhysics(1/60);
+				for(var  i = 0; i<6; i++){
+					var pos = demo.particleArray[i].getPosition();
+					meshes[i].position.set(pos.x, pos.y, pos.z);
+				}
+				
+				for(i = 0; i<15; i++){
+					pos = demo.rods[i].particle[0].getPosition();
+					rods[i].geometry.vertices[0].set(pos.x,pos.y,pos.z);
+					pos = demo.rods[i].particle[1].getPosition();
+					rods[i].geometry.vertices[1].set(pos.x,pos.y,pos.z);
+					rods[i].geometry.verticesNeedUpdate = true;
+				}
+				
+				//update ball
+				pos = demo.massDisplayPos;
+				ball.position.set(pos.x, pos.y + 0.25, pos.z);
+				
+				requestAnimationFrame(render);
+				renderer.render(scene, camera);
+			}
+		</script>
+	</body>
+</html>
